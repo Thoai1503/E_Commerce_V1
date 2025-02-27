@@ -28,6 +28,18 @@ export const ProductPage = () => {
   const [filteredBrand, setFilteredBrand] = useState("All");
   const [query, setQuery] = useState("");
   // Modify the fetchProductData function to store both all products and filtered products
+  const [filterState, setFilterState] = useState({
+    filtered_products: [],
+    all_products: [],
+    grid_view: true,
+    sort: "price-lowest",
+    filters: {
+      text: "",
+      brand: "all",
+      category: "all",
+    },
+  });
+  console.log(filterState);
   const fetchProductData = async () => {
     setLoading(true);
     try {
@@ -36,6 +48,7 @@ export const ProductPage = () => {
       // Store all products in both states initially
       setAllProducts(res.data.products);
       setProducts(res.data.products);
+      setFilterState({ ...filterState, all_products: [...res.data.products] });
 
       setCategories([
         ...new Set(
