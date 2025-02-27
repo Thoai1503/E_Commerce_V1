@@ -1,5 +1,6 @@
 import React from "react";
 import ProductItem from "./ProductItem";
+import { Link } from "react-router-dom";
 
 const GridView = ({ products }) => {
   return (

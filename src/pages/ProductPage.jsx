@@ -16,44 +16,134 @@ import Sidebar from "../Component/Sidebar";
 import GridView from "../Component/GridView";
 
 export const ProductPage = () => {
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [brand, setBrand] = useState([]);
+  const [filteredCate, setFilteredCate] = useState("All");
 
+  // const [filteredProduct, setFilteredProduct] = useState([]);
+  // Add a new state to store the original products
+  const [allProducts, setAllProducts] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [filteredBrand, setFilteredBrand] = useState("All");
+  const [query, setQuery] = useState("");
+  // Modify the fetchProductData function to store both all products and filtered products
   const fetchProductData = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`https://dummyjson.com/products`);
 
+      // Store all products in both states initially
+      setAllProducts(res.data.products);
       setProducts(res.data.products);
+
       setCategories([
         ...new Set(
           res.data.products.map(
             (item) =>
-              item.category.charAt(0).toUpperCase() + item.category.slice(1) // ✅ Capitalizing first letter
+              item.category.charAt(0).toUpperCase() + item.category.slice(1)
           )
         ),
       ]);
-      console.log(res.data);
-
+      setBrand([...new Set(res.data.products.map((item) => item.brand))]);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching products data:", error);
     }
   };
 
+  const filterProduct = (filCate, filBrand) => {
+    const flCate = filCate.charAt(0).toLowerCase() + filCate.slice(1);
+    console.log("Cate :" + flCate);
+    let filteredProducts = [...allProducts];
+    if (flCate !== "all") {
+      filteredProducts = filteredProducts.filter(
+        (item) => item.category === flCate
+      );
+    }
+
+    if (filBrand !== "All") {
+      filteredProducts = filteredProducts.filter(
+        (item) => item.brand === filBrand
+      );
+    }
+    setProducts(filteredProducts);
+  };
+  const refresh = () => {
+    setFilteredCate("All");
+    setFilteredBrand("All");
+    setQuery("");
+    setProducts(allProducts);
+  };
+  const handleChange = (e) => {
+    console.log(e.target.value);
+    setFilteredBrand(e.target.value);
+  };
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value;
+    setQuery(searchTerm);
+
+    if (!searchTerm.trim()) {
+      // If search is empty, show all products (based on current category/brand filters)
+      filterProduct(filteredCate, filteredBrand);
+      return;
+    }
+
+    // Use the current search term value directly, not the state
+    const searchProduct = allProducts.filter((item) => {
+      // Case-insensitive search in title and description
+      return item.title.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+    // Additional filtering for any active category/brand filters
+    let finalProducts = searchProduct;
+
+    if (filteredCate !== "All") {
+      const flCate =
+        filteredCate.charAt(0).toLowerCase() + filteredCate.slice(1);
+      finalProducts = finalProducts.filter((item) => item.category === flCate);
+    }
+
+    if (filteredBrand !== "All") {
+      finalProducts = finalProducts.filter(
+        (item) => item.brand === filteredBrand
+      );
+    }
+
+    setProducts(finalProducts);
+  };
+
+  useEffect(() => {
+    filterProduct(filteredCate, filteredBrand);
+    console.log(products);
+  }, [filteredCate, filteredBrand]);
+
   useEffect(() => {
     fetchProductData();
-    console.log("Cate:" + categories);
   }, []);
 
   useEffect(() => {
+    console.log("Cate filter:" + filteredCate);
+  }, [filteredCate]);
+
+  useEffect(() => {
     console.log("Categories:", categories);
-  }, [categories]);
+    console.log("Brand:", brand);
+  }, [categories, brand]);
+
   return (
     <>
       <Col md={2}>
-        <Sidebar categories={categories} />
+        <Sidebar
+          categories={categories}
+          brand={brand}
+          setFilteredCate={setFilteredCate}
+          refresh={refresh}
+          handleChange={handleChange}
+          filteredBrand={filteredBrand}
+          query={query}
+          handleSearch={handleSearch}
+        />
       </Col>
       <Col md={10}>
         <section style={{ backgroundColor: "white" }}>

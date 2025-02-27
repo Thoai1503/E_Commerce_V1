@@ -5,6 +5,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { FaShoppingCart } from "react-icons/fa";
+import { Link } from "react-router-dom";
 const BarE = () => {
   const [cartCount, setCartCount] = useState(3);
   return (
@@ -33,7 +34,7 @@ const BarE = () => {
           </Nav>
 
           {/* Cart Icon with Badge */}
-          <Nav.Link
+          <Link
             to="/cart"
             className="position-relative me-3"
             style={{ textDecoration: "none", color: "black" }}
@@ -47,7 +48,7 @@ const BarE = () => {
                 {cartCount}
               </span>
             )}
-          </Nav.Link>
+          </Link>
         </Navbar.Collapse>
       </Container>
     </Navbar>
