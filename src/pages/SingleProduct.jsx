@@ -8,6 +8,7 @@ const SingleProduct = () => {
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(false);
   const { addToCart } = useCart();
+  const [quantity, setQuantiy] = useState(1);
 
   const fetchProductData = async () => {
     setLoading(true);
@@ -21,6 +22,17 @@ const SingleProduct = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching products data:", error);
+    }
+  };
+
+  const addAmount = () => {
+    setQuantiy((q) => q + 1);
+  };
+
+  const desAmount = () => {
+    setQuantiy((q) => q - 1);
+    if (quantity < 1) {
+      setQuantiy(1);
     }
   };
 
@@ -199,6 +211,7 @@ const SingleProduct = () => {
                       style={{ width: "170px" }}
                     >
                       <button
+                        onClick={() => desAmount()}
                         className="btn btn-white border border-secondary px-3"
                         type="button"
                         id="button-addon1"
@@ -209,11 +222,14 @@ const SingleProduct = () => {
                       <input
                         type="text"
                         className="form-control text-center border border-secondary"
-                        placeholder="14"
+                        placeholder={quantity}
                         aria-label="Example text with button addon"
                         aria-describedby="button-addon1"
                       />
                       <button
+                        onClick={() => {
+                          addAmount();
+                        }}
                         className="btn btn-white border border-secondary px-3"
                         type="button"
                         id="button-addon2"
@@ -230,7 +246,7 @@ const SingleProduct = () => {
                 </a>
                 <button
                   className="btn btn-primary shadow-0"
-                  onClick={() => addToCart({ ...product, quantity: 1 })}
+                  onClick={() => addToCart({ ...product, quantity })}
                 >
                   {" "}
                   <i className="me-1 fa fa-shopping-basket"></i> Add to cart{" "}

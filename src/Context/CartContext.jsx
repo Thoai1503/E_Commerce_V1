@@ -39,8 +39,38 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const plusItemQuantity = (item) => {
+    console.log(item);
+    const existingItemIndex = cartItems.findIndex(
+      (cartItem) => cartItem.id === item.id
+    );
+    if (existingItemIndex >= 0) {
+      // Update quantity if item exists
+      const updatedItems = [...cartItems];
+      updatedItems[existingItemIndex].quantity += 1;
+      setCartItems(updatedItems);
+    }
+  };
+
   const removeCartItem = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const minusItemQuantity = (item) => {
+    console.log(item);
+    if (item.quantity < 1) {
+      removeCartItem(item.id);
+    }
+    const existingItemIndex = cartItems.findIndex(
+      (cartItem) => cartItem.id === item.id
+    );
+
+    if (existingItemIndex >= 0) {
+      // Update quantity if item exists
+      const updatedItems = [...cartItems];
+      updatedItems[existingItemIndex].quantity -= 1;
+      setCartItems(updatedItems);
+    }
   };
 
   const clearCart = () => {
@@ -49,10 +79,11 @@ export const CartProvider = ({ children }) => {
 
   // Calculate total price
   const getTotalPrice = () => {
-    return cartItems.reduce(
+    const price = cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
+    return parseFloat(price.toFixed(2));
   };
 
   const getItemCount = () => {
@@ -66,6 +97,8 @@ export const CartProvider = ({ children }) => {
     clearCart,
     getTotalPrice,
     getItemCount,
+    plusItemQuantity,
+    minusItemQuantity,
   };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

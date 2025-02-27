@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { useCart } from "../Context/CartContext";
 
 const CartPage = () => {
-  const { cartItems } = useCart();
+  const {
+    cartItems,
+    getTotalPrice,
+    removeCartItem,
+    plusItemQuantity,
+    minusItemQuantity,
+  } = useCart();
   return (
     <div>
       <div className="container py-5">
@@ -36,6 +42,9 @@ const CartPage = () => {
                           <div className="col-md-2">
                             <div className="input-group">
                               <button
+                                onClick={() => {
+                                  minusItemQuantity(item);
+                                }}
                                 className="btn btn-outline-secondary btn-sm"
                                 type="button"
                               >
@@ -48,6 +57,9 @@ const CartPage = () => {
                                 value={item.quantity}
                               />
                               <button
+                                onClick={() => {
+                                  plusItemQuantity(item);
+                                }}
                                 className="btn btn-outline-secondary btn-sm"
                                 type="button"
                               >
@@ -57,8 +69,11 @@ const CartPage = () => {
                           </div>
                           <div className="col-md-2 text-end">
                             <p className="fw-bold">$99.99</p>
-                            <button className="btn btn-sm btn-outline-danger">
-                              <i className="bi bi-trash"></i>
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => removeCartItem(item.id)}
+                            >
+                              <i className="bi bi-trash">Remove</i>
                             </button>
                           </div>
                         </div>
@@ -83,7 +98,7 @@ const CartPage = () => {
                 <h5 className="card-title mb-4">Order Summary</h5>
                 <div className="d-flex justify-content-between mb-3">
                   <span>Subtotal</span>
-                  <span>$199.97</span>
+                  <span>${getTotalPrice()}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-3">
                   <span>Shipping</span>

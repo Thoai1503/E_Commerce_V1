@@ -6,8 +6,10 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useCart } from "../Context/CartContext";
 const BarE = () => {
   const [cartCount, setCartCount] = useState(3);
+  const { getItemCount } = useCart();
   return (
     <Navbar expand="lg" className="bg-white">
       <Container fluid>
@@ -45,7 +47,7 @@ const BarE = () => {
                 className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                 style={{ fontSize: "12px" }}
               >
-                {cartCount}
+                {getItemCount()}
               </span>
             )}
           </Link>
