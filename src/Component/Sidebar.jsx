@@ -72,6 +72,7 @@ const Sidebar = ({
           </select>
         </form>
       </div>
+      <h6 style={{ color: "#0DC8EE", marginTop: "20px" }}>Price</h6>
       <button onClick={refresh}>Refresh</button>
     </div>
   );
