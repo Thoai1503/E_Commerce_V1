@@ -4,11 +4,12 @@ const Sidebar = ({
   categories = [],
   brand = [],
   setFilteredCate = () => {},
-  refresh = () => {},
-  handleChange = () => {},
+  handleBrandChange = () => {},
   filteredBrand,
-  handleSearch = () => {},
+  handleTextChange = () => {},
+  handleCategoryChange = () => {},
   query,
+  clearFilters = () => {},
 }) => {
   return (
     <div className="side-bar">
@@ -20,7 +21,7 @@ const Sidebar = ({
         <input
           type="text"
           value={query}
-          onChange={handleSearch}
+          onChange={handleTextChange}
           id="form12"
           className="form-control"
           placeholder="Search.."
@@ -33,7 +34,7 @@ const Sidebar = ({
             <button
               style={{ backgroundColor: "white", border: "none" }}
               onClick={() => {
-                setFilteredCate("All");
+                handleCategoryChange("All");
               }}
             >
               All
@@ -44,7 +45,7 @@ const Sidebar = ({
               <li className="list-group-item" key={index}>
                 <button
                   style={{ backgroundColor: "white", border: "none" }}
-                  onClick={() => setFilteredCate(`${item}`)}
+                  onClick={() => handleCategoryChange(`${item}`)}
                 >
                   {item}
                 </button>
@@ -56,7 +57,7 @@ const Sidebar = ({
         <form>
           <select
             value={filteredBrand}
-            onChange={handleChange}
+            onChange={handleBrandChange}
             name="sort"
             id="sort"
             className="sort-input"
@@ -73,7 +74,7 @@ const Sidebar = ({
         </form>
       </div>
       <h6 style={{ color: "#0DC8EE", marginTop: "20px" }}>Price</h6>
-      <button onClick={refresh}>Refresh</button>
+      <button onClick={clearFilters}>Refresh</button>
     </div>
   );
 };

@@ -14,6 +14,7 @@ import ProductItem from "../Component/ProductItem";
 import { BsFillGridFill, BsList } from "react-icons/bs";
 import Sidebar from "../Component/Sidebar";
 import GridView from "../Component/GridView";
+import ListView from "../Component/ListView";
 
 export const ProductPage = () => {
   const [loading, setLoading] = useState(false);
@@ -31,118 +32,200 @@ export const ProductPage = () => {
   const [filterState, setFilterState] = useState({
     filtered_products: [],
     all_products: [],
-    grid_view: true,
+    grid_view: false,
     sort: "price-lowest",
     filters: {
       text: "",
-      brand: "all",
+      brand: "All",
       category: "all",
     },
   });
-  console.log(filterState);
-  const fetchProductData = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`https://dummyjson.com/products`);
-
-      // Store all products in both states initially
-      setAllProducts(res.data.products);
-      setProducts(res.data.products);
-      setFilterState({ ...filterState, all_products: [...res.data.products] });
-
-      setCategories([
-        ...new Set(
-          res.data.products.map(
-            (item) =>
-              item.category.charAt(0).toUpperCase() + item.category.slice(1)
-          )
-        ),
-      ]);
-      setBrand([...new Set(res.data.products.map((item) => item.brand))]);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching products data:", error);
-    }
-  };
-
-  const filterProduct = (filCate, filBrand) => {
-    const flCate = filCate.charAt(0).toLowerCase() + filCate.slice(1);
-    console.log("Cate :" + flCate);
-    let filteredProducts = [...allProducts];
-    if (flCate !== "all") {
-      filteredProducts = filteredProducts.filter(
-        (item) => item.category === flCate
-      );
-    }
-
-    if (filBrand !== "All") {
-      filteredProducts = filteredProducts.filter(
-        (item) => item.brand === filBrand
-      );
-    }
-    setProducts(filteredProducts);
-  };
-  const refresh = () => {
-    setFilteredCate("All");
-    setFilteredBrand("All");
-    setQuery("");
-    setProducts(allProducts);
-  };
-  const handleChange = (e) => {
-    console.log(e.target.value);
-    setFilteredBrand(e.target.value);
-  };
-  const handleSearch = (e) => {
-    const searchTerm = e.target.value;
-    setQuery(searchTerm);
-
-    if (!searchTerm.trim()) {
-      // If search is empty, show all products (based on current category/brand filters)
-      filterProduct(filteredCate, filteredBrand);
-      return;
-    }
-
-    // Use the current search term value directly, not the state
-    const searchProduct = allProducts.filter((item) => {
-      // Case-insensitive search in title and description
-      return item.title.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-
-    // Additional filtering for any active category/brand filters
-    let finalProducts = searchProduct;
-
-    if (filteredCate !== "All") {
-      const flCate =
-        filteredCate.charAt(0).toLowerCase() + filteredCate.slice(1);
-      finalProducts = finalProducts.filter((item) => item.category === flCate);
-    }
-
-    if (filteredBrand !== "All") {
-      finalProducts = finalProducts.filter(
-        (item) => item.brand === filteredBrand
-      );
-    }
-
-    setProducts(finalProducts);
-  };
-
-  useEffect(() => {
-    filterProduct(filteredCate, filteredBrand);
-    console.log(products);
-  }, [filteredCate, filteredBrand]);
-
-  useEffect(() => {
-    fetchProductData();
-  }, []);
-
-  useEffect(() => {
-    console.log("Cate filter:" + filteredCate);
-  }, [filteredCate]);
 
   useEffect(() => {
     console.log("Categories:", categories);
     console.log("Brand:", brand);
   }, [categories, brand]);
+
+  const changeGridView = () => {
+    setFilterState({ ...filterState, grid_view: true });
+  };
+
+  const changeListView = () => {
+    setFilterState({ ...filterState, grid_view: false });
+  };
+
+  //New
+  const updateFilters = () => {
+    let tempProducts = [...filterState.all_products];
+    const { text, category, brand } = filterState.filters;
+
+    // Filter by search text
+
+    if (text.trim() === "") {
+      tempProducts = [...filterState.all_products];
+      // Filter by category
+      if (category !== "all") {
+        // Convert category format if needed (first letter lowercase)
+        const formattedCategory =
+          category === "all"
+            ? "all"
+            : category.charAt(0).toLowerCase() + category.slice(1);
+
+        tempProducts = tempProducts.filter(
+          (product) => product.category === formattedCategory
+        );
+      }
+
+      // Filter by brand
+      if (brand !== "All") {
+        tempProducts = tempProducts.filter(
+          (product) => product.brand === brand
+        );
+      }
+    }
+
+    tempProducts = tempProducts.filter((product) =>
+      product.title.toLowerCase().includes(text.trim().toLowerCase())
+    );
+
+    // Sort products based on current sort setting
+    const sortedProducts = sortProducts(tempProducts);
+
+    // Update state with filtered and sorted products
+    setFilterState({
+      ...filterState,
+      filtered_products: sortedProducts,
+    });
+  };
+
+  // Handle text search change
+  const handleTextChange = (e) => {
+    const value = e.target.value;
+    setFilterState({
+      ...filterState,
+      filters: {
+        ...filterState.filters,
+        text: value,
+      },
+    });
+    // We could call updateFilters() here directly, but it's better to use useEffect
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (categorya) => {
+    const cate = categorya.charAt(0).toLowerCase() + categorya.slice(1);
+    setFilterState({
+      ...filterState,
+      filters: {
+        ...filterState.filters,
+        category: cate,
+      },
+    });
+  };
+
+  // Handle brand selection
+  const handleBrandChange = (e) => {
+    const value = e.target.value;
+    setFilterState({
+      ...filterState,
+      filters: {
+        ...filterState.filters,
+        brand: value,
+      },
+    });
+  };
+
+  // Handle sort change
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    setFilterState({
+      ...filterState,
+      sort: value,
+    });
+  };
+
+  // Sort products based on current sort setting
+  const sortProducts = (products) => {
+    const { sort } = filterState;
+    let tempProducts = [...products];
+
+    if (sort === "price-lowest") {
+      tempProducts = tempProducts.sort((a, b) => a.price - b.price);
+    }
+    if (sort === "price-highest") {
+      tempProducts = tempProducts.sort((a, b) => b.price - a.price);
+    }
+    if (sort === "name-a") {
+      tempProducts = tempProducts.sort((a, b) =>
+        a.title.localeCompare(b.title)
+      );
+    }
+    if (sort === "name-z") {
+      tempProducts = tempProducts.sort((a, b) =>
+        b.title.localeCompare(a.title)
+      );
+    }
+
+    return tempProducts;
+  };
+
+  // Reset all filters
+  const clearFilters = () => {
+    // let tempProducts = [...filterState.all_products];
+    setFilterState({
+      ...filterState,
+
+      filters: {
+        text: "",
+        category: "all",
+        brand: "All",
+      },
+    });
+  };
+
+  useEffect(() => {
+    updateFilters();
+  }, [filterState.filters, filterState.sort]);
+
+  // useEffect to fetch initial data and set all_products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("https://dummyjson.com/products");
+
+        setFilterState({
+          ...filterState,
+          all_products: response.data.products,
+          filtered_products: sortProducts(response.data.products),
+        });
+
+        // Extract unique categories and brands
+        const uniqueCategories = [
+          ...new Set(
+            response.data.products.map(
+              (item) =>
+                item.category.charAt(0).toUpperCase() + item.category.slice(1)
+            )
+          ),
+        ];
+
+        const uniqueBrands = [
+          ...new Set(response.data.products.map((item) => item.brand)),
+        ];
+
+        setCategories(uniqueCategories);
+        setBrand(uniqueBrands);
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <>
@@ -151,11 +234,13 @@ export const ProductPage = () => {
           categories={categories}
           brand={brand}
           setFilteredCate={setFilteredCate}
-          refresh={refresh}
-          handleChange={handleChange}
-          filteredBrand={filteredBrand}
-          query={query}
-          handleSearch={handleSearch}
+          filteredBrand={filterState.filters.brand}
+          query={filterState.filters.text}
+          handleTextChange={handleTextChange}
+          handleSortChange={handleSortChange}
+          handleCategoryChange={handleCategoryChange}
+          clearFilters={clearFilters}
+          handleBrandChange={handleBrandChange}
         />
       </Col>
       <Col md={10}>
@@ -164,10 +249,10 @@ export const ProductPage = () => {
             <Row>
               <Col md={6}>
                 {" "}
-                <button className="btn-view grid-view">
+                <button onClick={changeGridView} className="btn-view grid-view">
                   <BsFillGridFill />{" "}
                 </button>
-                <button className="btn-view list-view">
+                <button onClick={changeListView} className="btn-view list-view">
                   <BsList />
                 </button>
               </Col>
@@ -176,7 +261,13 @@ export const ProductPage = () => {
                   <label style={{ marginRight: "8px" }} htmlFor="sort">
                     Sort by{" "}
                   </label>
-                  <select name="sort" id="sort" className="sort-input">
+                  <select
+                    name="sort"
+                    id="sort"
+                    value={filterState.sort}
+                    className="sort-input"
+                    onChange={handleSortChange}
+                  >
                     <option value="price-lowest">price (lowest)</option>
                     <option value="price-highest">price (highest)</option>
                     <option value="name-a">name (a - z)</option>
@@ -187,7 +278,12 @@ export const ProductPage = () => {
             </Row>
             <hr />
             <div className="row">
-              {!loading && <GridView products={products} />}
+              {!loading &&
+                (filterState.grid_view ? (
+                  <GridView products={filterState.filtered_products} />
+                ) : (
+                  <ListView />
+                ))}
             </div>
           </div>
         </section>

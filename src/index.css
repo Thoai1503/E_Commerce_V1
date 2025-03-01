@@ -66,3 +66,9 @@ code {
   top: 0;
   left: 0;
 }
+
+@media (max-width: 767.98px) {
+  .border-sm-start-none {
+    border-left: none !important;
+  }
+}
